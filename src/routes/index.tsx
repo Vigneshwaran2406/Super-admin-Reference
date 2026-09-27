@@ -14,6 +14,7 @@ import { OrganizationDomainView } from '@/pages/educational/OrganizationDomainVi
 
 // Platform & Governance
 import { SuperAdminDashboard } from '@/pages/platform/SuperAdminDashboard'
+import { SuperAdminManagementHub } from '@/pages/platform/SuperAdminManagementHub'
 import { GlobalDashboard } from '@/pages/platform/GlobalDashboard'
 import { PlatformConfiguration } from '@/pages/platform/PlatformConfiguration'
 import { GlobalSettings } from '@/pages/platform/GlobalSettings'
@@ -107,6 +108,7 @@ export const router = createBrowserRouter([
       { path: 'admin/domain-view', element: <OrganizationDomainView /> },
 
       // Platform & Global
+      { path: 'platform/super-admin', element: <SuperAdminManagementHub /> },
       { path: 'platform/global-dashboard', element: <GlobalDashboard /> },
       { path: 'platform/configuration', element: <PlatformConfiguration /> },
       { path: 'platform/settings', element: <GlobalSettings /> },

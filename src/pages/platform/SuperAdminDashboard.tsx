@@ -1,8 +1,13 @@
 import React, { useState } from 'react'
 import { ContextPanel } from '@/components/ui/ContextPanel'
 import { StatCard } from '@/components/ui/StatCard'
+import { TelemetryGauge } from '@/components/ui/TelemetryGauge'
+import { ActiveOnlineSessionsWidget } from '@/components/ui/ActiveOnlineSessionsWidget'
+import { ExportReportModal, ExportFormatType } from '@/components/ui/ExportReportModal'
+import { mockPlatformTelemetry, mockActiveOnlineSessions } from '@/mock'
 import { Badge } from '@/components/ui/Badge'
 import { usePerspective } from '@/context/PerspectiveContext'
+import { useToast } from '@/context/ToastContext'
 import { ActivePerspective } from '@/types'
 import { 
   Users, 
@@ -25,13 +30,31 @@ import {
   FolderTree, 
   MapPin, 
   HardDrive,
+  Cpu,
   HelpCircle,
+  Download,
   X
 } from 'lucide-react'
 
 export const SuperAdminDashboard: React.FC = () => {
   const { perspective, setPerspective, selectedTenant, perspectiveScope, activeProfile } = usePerspective()
   const [isScopeModalOpen, setIsScopeModalOpen] = useState(false)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const { showToast } = useToast()
+
+  const handleExportReport = (format: ExportFormatType, formatTitle: string) => {
+    setIsExporting(true)
+    setTimeout(() => {
+      setIsExporting(false)
+      setIsExportModalOpen(false)
+      showToast(
+        `${formatTitle} exported successfully`,
+        'success',
+        `Simulated ${formatTitle} generated locally. No backend export job was triggered.`
+      )
+    }, 800)
+  }
 
   const renderKpiIcon = (iconName: string) => {
     const iconProps = { className: 'w-5 h-5' }
@@ -132,6 +155,16 @@ export const SuperAdminDashboard: React.FC = () => {
           </div>
 
           <button
+            onClick={() => setIsExportModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-xs transition-colors"
+            title="Export Dashboard Report"
+            aria-label="Export dashboard report"
+          >
+            <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span>Export Report</span>
+          </button>
+
+          <button
             onClick={() => setIsScopeModalOpen(true)}
             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 dark:bg-indigo-950/40 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 transition-colors"
           >
@@ -141,19 +174,102 @@ export const SuperAdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. 4 KEY METRIC CARDS */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {currentData.kpis.slice(0, 4).map((kpi, idx) => (
-          <StatCard
-            key={idx}
-            title={kpi.title}
-            value={kpi.value}
-            change={kpi.change}
-            trend={kpi.trend}
-            icon={renderKpiIcon(kpi.iconName)}
-            description={kpi.description}
+      {/* 2. SUMMARY / KPI STATS CARDS (INCLUDING UI-002 ACTIVE ONLINE SESSIONS) */}
+      <section className={`grid grid-cols-1 sm:grid-cols-2 ${
+        perspective === 'super-admin'
+          ? 'lg:grid-cols-3 xl:grid-cols-5'
+          : 'lg:grid-cols-4'
+      } gap-5`}>
+        {perspective === 'super-admin' ? (
+          <>
+            {/* Card 1: Total Registered / Platform Users */}
+            <StatCard
+              title={currentData.kpis[0].title}
+              value={currentData.kpis[0].value}
+              change={currentData.kpis[0].change}
+              trend={currentData.kpis[0].trend}
+              icon={renderKpiIcon(currentData.kpis[0].iconName)}
+              description={currentData.kpis[0].description}
+            />
+
+            {/* Card 2: UI-002 Dedicated Live Online Session Counter Widget */}
+            <ActiveOnlineSessionsWidget
+              count={mockActiveOnlineSessions.count}
+              label={mockActiveOnlineSessions.label}
+              change={mockActiveOnlineSessions.change}
+              trend={mockActiveOnlineSessions.trend}
+              description={mockActiveOnlineSessions.description}
+            />
+
+            {/* Cards 3-5: Remaining Platform KPIs */}
+            {currentData.kpis.slice(1, 4).map((kpi, idx) => (
+              <StatCard
+                key={idx}
+                title={kpi.title}
+                value={kpi.value}
+                change={kpi.change}
+                trend={kpi.trend}
+                icon={renderKpiIcon(kpi.iconName)}
+                description={kpi.description}
+              />
+            ))}
+          </>
+        ) : (
+          currentData.kpis.slice(0, 4).map((kpi, idx) => (
+            <StatCard
+              key={idx}
+              title={kpi.title}
+              value={kpi.value}
+              change={kpi.change}
+              trend={kpi.trend}
+              icon={renderKpiIcon(kpi.iconName)}
+              description={kpi.description}
+            />
+          ))
+        )}
+      </section>
+
+
+      {/* 2b. PLATFORM RESOURCE TELEMETRY METERS (UI-001) */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              System Resource Telemetry
+            </h2>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+              Mock Telemetry
+            </span>
+          </div>
+          <span className="text-xs text-slate-400 font-mono hidden sm:inline">
+            Thresholds: &lt;60% Normal · 60–80% Elevated · &gt;80% High Load
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <TelemetryGauge
+            label={mockPlatformTelemetry.cpu.label}
+            value={mockPlatformTelemetry.cpu.value}
+            unit={mockPlatformTelemetry.cpu.unit}
+            statusLabel={mockPlatformTelemetry.cpu.statusLabel}
+            status={mockPlatformTelemetry.cpu.status}
+            change={mockPlatformTelemetry.cpu.change}
+            trend={mockPlatformTelemetry.cpu.trend}
+            description={mockPlatformTelemetry.cpu.description}
+                        icon={<Cpu className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
           />
-        ))}
+          <TelemetryGauge
+            label={mockPlatformTelemetry.memory.label}
+            value={mockPlatformTelemetry.memory.value}
+            unit={mockPlatformTelemetry.memory.unit}
+            statusLabel={mockPlatformTelemetry.memory.statusLabel}
+            status={mockPlatformTelemetry.memory.status}
+            change={mockPlatformTelemetry.memory.change}
+            trend={mockPlatformTelemetry.memory.trend}
+            description={mockPlatformTelemetry.memory.description}
+                        icon={<HardDrive className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
+          />
+        </div>
       </section>
 
       {/* 3. PRIMARY LARGE CHART */}
@@ -262,6 +378,15 @@ export const SuperAdminDashboard: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* UI-003: Unified Export Dashboard Report Action Dialog */}
+      <ExportReportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleExportReport}
+        isExporting={isExporting}
+        reportTitle={currentData.title}
+      />
 
       {/* SLIDE-OVER ROLE & SCOPE GUIDE DRAWER */}
       {isScopeModalOpen && (

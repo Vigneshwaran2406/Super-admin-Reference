@@ -365,6 +365,62 @@ export const mockSystemMetrics: SystemMetric[] = [
   { name: 'CPU & Memory Load', value: '38% CPU / 44% RAM', change: 'Optimal range', trend: 'neutral', status: 'healthy', description: 'Microservices container fabric' },
 ]
 
+
+export interface SystemTelemetryMetric {
+  label: string
+  value: number
+  unit: string
+  statusLabel: string
+  status: 'optimal' | 'warning' | 'critical' | 'healthy'
+  change?: string
+  trend?: 'up' | 'down' | 'neutral'
+  description?: string
+}
+
+export interface PlatformTelemetryData {
+  cpu: SystemTelemetryMetric
+  memory: SystemTelemetryMetric
+}
+
+export const mockPlatformTelemetry: PlatformTelemetryData = {
+  cpu: {
+    label: 'CPU Utilization',
+    value: 42.8,
+    unit: '%',
+    statusLabel: 'Normal',
+    status: 'optimal',
+    change: '-1.4% vs last hr',
+    trend: 'down',
+    description: 'Current compute utilization across platform services'
+  },
+  memory: {
+    label: 'Memory Utilization',
+    value: 68.4,
+    unit: '%',
+    statusLabel: 'Elevated',
+    status: 'warning',
+    change: '+2.1% vs last hr',
+    trend: 'up',
+    description: 'Current memory allocation across platform services'
+  }
+}
+
+export interface ActiveSessionsMetric {
+  count: number
+  label: string
+  change?: string
+  trend?: 'up' | 'down' | 'neutral'
+  description?: string
+}
+
+export const mockActiveOnlineSessions: ActiveSessionsMetric = {
+  count: 1284,
+  label: 'Active Online Sessions',
+  change: '+5.8% concurrent',
+  trend: 'up',
+  description: 'Live authenticated user sessions across all provisioned tenants'
+}
+
 export const mockAuditEntries = [
   { id: 'AUD-901', timestamp: '2026-09-11 12:40:12', actor: 'alex.wright@onecloud.io', role: 'Super Administrator', action: 'TENANT_PROVISION_INITIATED', target: 'Horizon Media Network', ip: '198.51.100.24', status: 'Success', details: 'Initialized Dedicated DB cluster & VPC peering' },
   { id: 'AUD-902', timestamp: '2026-09-11 12:15:33', actor: 'm.bell@acme.com', role: 'Organization Administrator', action: 'DEPARTMENT_CREATED', target: 'DEP-AI-LAB', ip: '203.0.113.88', status: 'Success', details: 'Created AI Innovation Department under Acme Enterprise' },

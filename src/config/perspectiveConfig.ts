@@ -129,6 +129,7 @@ export const ROLE_PROFILES: Record<ActivePerspective, RoleProfile> = {
         scopeTag: 'GLOBAL',
         items: [
           { label: 'Super Admin Dashboard', to: '/console', iconName: 'LayoutDashboard' },
+          { label: 'Super Admin Management', to: '/platform/super-admin', iconName: 'Shield' },
           { label: 'Global Dashboard', to: '/platform/global-dashboard', iconName: 'Globe' },
           { label: 'Platform Configuration', to: '/platform/configuration', iconName: 'Sliders' },
           { label: 'Global Settings', to: '/platform/settings', iconName: 'Settings' },
